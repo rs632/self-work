@@ -81,16 +81,21 @@ fun InspectionScreen(controller: InspectionController, onBack: () -> Unit) {
                     OutlinedButton(onClick = { controller.load(retry = true) }, modifier = Modifier.testTag("retry")) { Text("重试") }
                 }
                 LoadPhase.SUCCESS -> {
-                    // TODO 3：从任务列表计算已完成数量，不能写死。
-                    val done = 0
+                    val done = state.tasks.count { it.status == "已完成" }
                     Text("${controller.room} · 共${state.tasks.size}项 · 待巡检${state.tasks.size - done}项 · 已完成${done}项",
                         modifier = Modifier.testTag("summary"), style = MaterialTheme.typography.titleSmall)
                     // TODO 6：增加“全部／仅看待巡检”按钮，更新pendingOnly。
                     // 根据pendingOnly筛选state.tasks，计算visibleTasks，并显示当前显示数量。
                     // 此处起点直接使用全部数据；完成后A203仅待巡检为5项，A204为1项。
                     val visibleTasks = state.tasks
-                    // TODO 4：使用LazyColumn、items和InspectionTaskCard展示visibleTasks。
-                    Text("TODO 4：请在此显示任务列表")
+                    LazyColumn(
+                        modifier = Modifier.weight(1f).fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(visibleTasks, key = { it.id }) { task ->
+                            InspectionTaskCard(task)
+                        }
+                    }
                 }
             }
         }
@@ -101,8 +106,16 @@ fun InspectionScreen(controller: InspectionController, onBack: () -> Unit) {
 fun InspectionTaskCard(task: InspectionTask) {
     Card(Modifier.fillMaxWidth().testTag("task_${task.id}")) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            // TODO 5：用Row组织名称和状态；名称用weight(1f)；下方显示编号和位置。
-            Text("待补全的任务卡片")
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(
+                    task.deviceName,
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(task.status, style = MaterialTheme.typography.labelLarge)
+            }
+            Text("编号：${task.id}", style = MaterialTheme.typography.bodySmall)
+            Text("位置：${task.location}", style = MaterialTheme.typography.bodySmall)
         }
     }
 }
